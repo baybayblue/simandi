@@ -49,36 +49,29 @@
                     </a>
                 </li>
 
-                <!-- Transaksi (Dropdown) -->
-                <li class="nav-item {{ request()->routeIs('admin.transactions.*') ? 'menu-is-opening menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
+                <!-- Transaksi -->
+                <li class="nav-item">
+                    <a href="{{ route('admin.transactions.index') }}" class="nav-link {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-cash-register"></i>
-                        <p>
-                            Transaksi
-                            <i class="fas fa-angle-left right"></i>
-                        </p>
+                        <p>Transaksi</p>
                     </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ route('admin.transactions.create') }}" class="nav-link {{ request()->routeIs('admin.transactions.create') ? 'active' : '' }}">
-                                <i class="far fa-plus-square nav-icon"></i>
-                                <p>Transaksi Baru</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('admin.transactions.index') }}" class="nav-link {{ request()->routeIs('admin.transactions.index') ? 'active' : '' }}">
-                                <i class="far fa-list-alt nav-icon"></i>
-                                <p>Log Transaksi</p>
-                            </a>
-                        </li>
-                    </ul>
                 </li>
+
+                <li class="nav-header">SISTEM</li>
 
                 <!-- Laporan -->
                 <li class="nav-item">
                     <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-file-alt"></i>
                         <p>Laporan</p>
+                    </a>
+                </li>
+
+                <!-- Log Aktivitas -->
+                <li class="nav-item">
+                    <a href="{{ route('admin.activity_logs.index') }}" class="nav-link {{ request()->routeIs('admin.activity_logs.index') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-history"></i>
+                        <p>Log Aktivitas</p>
                     </a>
                 </li>
 
@@ -102,3 +95,4 @@
     </div>
     <!-- /.sidebar -->
 </aside>
+
