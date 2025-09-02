@@ -8,9 +8,17 @@ use Illuminate\Http\Request;
 
 class ActivityLogController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $logs = ActivityLog::with('user')->latest()->paginate(20);
-        return view('admin.activity_logs.index', compact('logs'));
+        // Controller ini mengirim variabel dengan nama 'activityLogs'
+        $activityLogs = ActivityLog::with('user')
+            ->latest()
+            ->paginate(15);
+
+        return view('admin.activity_logs.index', compact('activityLogs'));
     }
 }
+

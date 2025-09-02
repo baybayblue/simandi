@@ -9,16 +9,23 @@ use Illuminate\Http\Request;
 class ServiceController extends Controller
 {
     /**
-     * Menampilkan daftar semua layanan.
+     * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $services = Service::latest()->paginate(10);
+        $search = $request->input('search');
+
+        $services = Service::when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(10);
+
         return view('admin.services.index', compact('services'));
     }
 
     /**
-     * Menampilkan form untuk membuat layanan baru.
+     * Show the form for creating a new resource.
      */
     public function create()
     {
@@ -26,29 +33,32 @@ class ServiceController extends Controller
     }
 
     /**
-     * Menyimpan layanan baru ke database.
+     * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'price_per_kg' => 'required|integer|min:0',
+            'price_per_kg' => 'required|numeric|min:0',
             'estimated_completion_date' => 'required|date',
         ]);
 
-        // Menggunakan nama kolom yang benar: estimated_completion_date
-        Service::create([
-            'name' => $request->name,
-            'price_per_kg' => $request->price_per_kg,
-            'estimated_completion_date' => $request->estimated_completion_date,
-        ]);
+        Service::create($validatedData);
 
-        return redirect()->route('admin.services.index')
-                         ->with('success', 'Layanan berhasil ditambahkan.');
+        return redirect()->route('admin.services.index')->with('success', 'Layanan baru berhasil ditambahkan.');
     }
 
     /**
-     * Menampilkan form untuk mengedit layanan.
+     * Display the specified resource.
+     */
+    public function show(Service $service)
+    {
+        // Biasanya tidak digunakan, karena detail bisa dilihat di halaman edit
+        return redirect()->route('admin.services.edit', $service);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
      */
     public function edit(Service $service)
     {
@@ -56,36 +66,28 @@ class ServiceController extends Controller
     }
 
     /**
-     * Memperbarui data layanan di database.
+     * Update the specified resource in storage.
      */
     public function update(Request $request, Service $service)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'price_per_kg' => 'required|integer|min:0',
+            'price_per_kg' => 'required|numeric|min:0',
             'estimated_completion_date' => 'required|date',
         ]);
 
-        // Menggunakan nama kolom yang benar: estimated_completion_date
-        $service->update([
-            'name' => $request->name,
-            'price_per_kg' => $request->price_per_kg,
-            'estimated_completion_date' => $request->estimated_completion_date,
-        ]);
+        $service->update($validatedData);
 
-        return redirect()->route('admin.services.index')
-                         ->with('success', 'Layanan berhasil diperbarui.');
+        return redirect()->route('admin.services.index')->with('success', 'Data layanan berhasil diperbarui.');
     }
 
     /**
-     * Menghapus data layanan dari database.
+     * Remove the specified resource from storage.
      */
     public function destroy(Service $service)
     {
         $service->delete();
-
-        return redirect()->route('admin.services.index')
-                         ->with('success', 'Layanan berhasil dihapus.');
+        return redirect()->route('admin.services.index')->with('success', 'Data layanan berhasil dihapus.');
     }
 }
 

@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class PelangganController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar semua pelanggan.
      */
     public function index()
     {
@@ -18,7 +18,7 @@ class PelangganController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Menampilkan form untuk membuat pelanggan baru.
      */
     public function create()
     {
@@ -26,37 +26,25 @@ class PelangganController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Menyimpan data pelanggan baru ke database.
      */
     public function store(Request $request)
     {
-        // Validasi input
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255|unique:customers,email',
-            'phone' => 'required|string|max:15|unique:customers,phone',
+            'phone' => 'required|string|max:20',
             'address' => 'nullable|string',
         ]);
 
-        // Buat customer baru
-        Customer::create($request->all());
+        Customer::create($validatedData);
 
-        // Redirect ke halaman index dengan pesan sukses
         return redirect()->route('admin.customers.index')
                          ->with('success', 'Pelanggan baru berhasil ditambahkan.');
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Customer $customer)
-    {
-        // Biasanya untuk detail, tapi kita bisa langsung arahkan ke edit
-        return view('admin.customers.edit', compact('customer'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
+     * Menampilkan form untuk mengedit data pelanggan.
      */
     public function edit(Customer $customer)
     {
@@ -64,35 +52,30 @@ class PelangganController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Memperbarui data pelanggan di database.
      */
     public function update(Request $request, Customer $customer)
     {
-        // Validasi input
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255|unique:customers,email,' . $customer->id,
-            'phone' => 'required|string|max:15|unique:customers,phone,' . $customer->id,
+            'phone' => 'required|string|max:20',
             'address' => 'nullable|string',
         ]);
 
-        // Update data customer
-        $customer->update($request->all());
+        $customer->update($validatedData);
 
-        // Redirect ke halaman index dengan pesan sukses
         return redirect()->route('admin.customers.index')
                          ->with('success', 'Data pelanggan berhasil diperbarui.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Menghapus data pelanggan dari database.
      */
     public function destroy(Customer $customer)
     {
-        // Hapus data customer
         $customer->delete();
 
-        // Redirect ke halaman index dengan pesan sukses
         return redirect()->route('admin.customers.index')
                          ->with('success', 'Data pelanggan berhasil dihapus.');
     }

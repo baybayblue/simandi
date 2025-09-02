@@ -1,69 +1,75 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Data Layanan')
+@section('title', 'Tambah Layanan Baru')
 
 @section('content')
-<div class="container-fluid">
-     <div class="content-header">
-         <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="m-0">Tambah Data Layanan</h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('admin.services.index') }}">Layanan</a></li>
-                        <li class="breadcrumb-item active">Tambah Data</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+    <div class="bg-white shadow sm:rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Formulir Tambah Layanan
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Isi detail layanan laundry baru di bawah ini.
+            </p>
 
-    <section class="content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Form Data Layanan</h3>
+            <form action="{{ route('admin.services.store') }}" method="POST" class="mt-6 space-y-6">
+                @csrf
+                <!-- Jenis Layanan -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Jenis Layanan</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="package" class="h-5 w-5 text-gray-400"></i>
                         </div>
-                        <form action="{{ route('admin.services.store') }}" method="POST">
-                            @csrf
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label for="name">Jenis Layanan</label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
-                                    @error('name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="form-group">
-                                    <label for="price_per_kg">Harga per Kg (Rp)</label>
-                                    <input type="number" class="form-control @error('price_per_kg') is-invalid @enderror" id="price_per_kg" name="price_per_kg" value="{{ old('price_per_kg') }}" required>
-                                    @error('price_per_kg')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="form-group">
-                                    <label for="estimated_completion_date">Estimasi Tanggal Selesai</label>
-                                    <input type="date" class="form-control @error('estimated_completion_date') is-invalid @enderror" id="estimated_completion_date" name="estimated_completion_date" value="{{ old('estimated_completion_date') }}" required>
-                                    @error('estimated_completion_date')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="card-footer">
-                                <button type="submit" class="btn btn-primary">Simpan</button>
-                                <a href="{{ route('admin.services.index') }}" class="btn btn-secondary">Batal</a>
-                            </div>
-                        </form>
+                        <input type="text" name="name" id="name" value="{{ old('name') }}" required
+                               class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 py-2 sm:text-sm border-gray-300 rounded-lg"
+                               placeholder="Contoh: Cuci Kering Setrika">
+                    </div>
+                    @error('name')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+
+                <!-- Harga per Kg -->
+                <div>
+                    <label for="price_per_kg" class="block text-sm font-medium text-gray-700">Harga per Kg</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">Rp</span>
+                        </div>
+                        <input type="number" name="price_per_kg" id="price_per_kg" value="{{ old('price_per_kg') }}" required
+                               class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-8 py-2 sm:text-sm border-gray-300 rounded-lg"
+                               placeholder="Contoh: 7000">
+                    </div>
+                    @error('price_per_kg')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+
+                <!-- Estimasi Tanggal Selesai -->
+                <div>
+                    <label for="estimated_completion_date" class="block text-sm font-medium text-gray-700">Estimasi Tanggal Selesai</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="calendar-days" class="h-5 w-5 text-gray-400"></i>
+                        </div>
+                        <input type="date" name="estimated_completion_date" id="estimated_completion_date" value="{{ old('estimated_completion_date') }}" required
+                               class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 py-2 sm:text-sm border-gray-300 rounded-lg">
+                    </div>
+                     @error('estimated_completion_date')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="pt-5">
+                    <div class="flex justify-end space-x-3">
+                        <a href="{{ route('admin.services.index') }}" class="bg-white py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Batal
+                        </a>
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Simpan
+                        </button>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
-    </section>
+    </div>
 </div>
 @endsection
 

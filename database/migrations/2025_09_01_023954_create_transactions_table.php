@@ -25,7 +25,8 @@ return new class extends Migration
             $table->integer('total_price');  // Total biaya yang dihitung
 
             // Status & Tanggal
-            $table->string('status')->default('masuk'); // Status: masuk, proses, selesai, diambil
+            $table->string('status')->default('Baru Masuk'); // Status: Baru Masuk, Proses, Selesai, Diambil
+            $table->string('payment_status')->default('Belum Lunas'); // Status Pembayaran: Belum Lunas, Lunas
             $table->dateTime('completion_date')->nullable(); // Tanggal selesai dicuci
             $table->dateTime('pickup_date')->nullable();     // Tanggal diambil pelanggan
 
@@ -44,3 +45,4 @@ return new class extends Migration
         Schema::dropIfExists('transactions');
     }
 };
+

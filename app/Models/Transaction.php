@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\LogsActivity;
 
 class Transaction extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -23,43 +23,34 @@ class Transaction extends Model
         'weight',
         'total_price',
         'status',
+        'payment_status',
         'completion_date',
         'pickup_date',
         'notes',
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
+     * Get the customer that owns the transaction.
      */
-    protected $casts = [
-        'weight' => 'decimal:2',
-        'completion_date' => 'datetime',
-        'pickup_date' => 'datetime',
-    ];
-
-    /**
-     * Mendapatkan data pelanggan yang terkait dengan transaksi.
-     */
-    public function customer(): BelongsTo
+    public function customer()
     {
         return $this->belongsTo(Customer::class);
     }
 
     /**
-     * Mendapatkan data layanan yang terkait dengan transaksi.
+     * Get the service for the transaction.
      */
-    public function service(): BelongsTo
+    public function service()
     {
         return $this->belongsTo(Service::class);
     }
 
     /**
-     * Mendapatkan data admin (user) yang memproses transaksi.
+     * Get the user who processed the transaction.
      */
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 }
+
