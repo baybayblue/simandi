@@ -1,23 +1,90 @@
-<header class="flex items-center justify-between px-6 py-4 bg-white border-b-2 border-gray-100">
-    <div class="flex items-center">
-        <h2 class="text-xl font-semibold text-gray-700">@yield('title')</h2>
-    </div>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Simandi Laundry')</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Alpine JS -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    <div class="flex items-center">
-        <div class="relative">
-            <button class="relative z-10 block h-10 w-10 overflow-hidden rounded-full shadow focus:outline-none" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                <img class="h-full w-full object-cover" src="{{ asset('dist/img/user2-160x160.jpg') }}" alt="Your avatar">
-            </button>
-            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md overflow-hidden shadow-xl z-10 hidden">
-                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-600 hover:text-white">Profile</a>
-                <a href="{{ route('logout') }}" 
-                   onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
-                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-600 hover:text-white">Logout</a>
-                <form id="logout-form-header" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>
-            </div>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* gray-50 */
+        }
+        [x-cloak] { display: none !important; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div x-data="{ sidebarOpen: true }" @keydown.window.escape="sidebarOpen = false" class="flex h-screen bg-gray-50">
+        <!-- Sidebar -->
+        @include('layouts.partials.sidebar')
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            @include('layouts.partials.header')
+
+            <!-- Page Content -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto">
+                @yield('content')
+            </main>
+
+            <!-- Footer -->
+            @include('layouts.partials.footer')
         </div>
     </div>
-</header>
+    
+    <!-- Initializing Lucide Icons & Scripts -->
+    <script>
+        lucide.createIcons();
+
+        @if(session('success'))
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: '{{ session('success') }}',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: '{{ session('error') }}',
+                showConfirmButton: false,
+                timer: 5000,
+                timerProgressBar: true,
+            });
+        @endif
+    </script>
+    @stack('scripts')
+</body>
+</html>
 

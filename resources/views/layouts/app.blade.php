@@ -27,25 +27,17 @@
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc; /* gray-50 */
         }
-        /* Custom scrollbar for webkit browsers */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9; /* slate-100 */
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; /* slate-300 */
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; /* slate-400 */
-        }
+        [x-cloak] { display: none !important; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="antialiased">
 
-    <div x-data="{ sidebarOpen: true }" @keydown.window.escape="sidebarOpen = false" class="flex h-screen bg-gray-50">
+    <div x-data="{ sidebarOpen: true }" @keydown.window.escape="sidebarOpen = false" class="flex h-screen bg-gray-100">
         <!-- Sidebar -->
         @include('layouts.partials.sidebar')
 
@@ -55,10 +47,8 @@
             @include('layouts.partials.header')
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
-                <div class="container mx-auto px-6 py-8">
-                    @yield('content')
-                </div>
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+                @yield('content')
             </main>
 
             <!-- Footer -->
@@ -66,8 +56,10 @@
         </div>
     </div>
     
-    <!-- SweetAlert Notification Script -->
+    <!-- Initializing Lucide Icons & Scripts -->
     <script>
+        lucide.createIcons();
+
         @if(session('success'))
             Swal.fire({
                 toast: true,
@@ -92,13 +84,6 @@
             });
         @endif
     </script>
-    
-    <!-- Initializing Lucide Icons -->
-    <script>
-        lucide.createIcons();
-    </script>
-
-    <!-- For page-specific scripts like delete confirmation -->
     @stack('scripts')
 </body>
 </html>

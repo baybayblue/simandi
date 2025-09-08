@@ -13,18 +13,21 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Data untuk kartu statistik
+        // Statistics
         $totalCustomers = Customer::count();
         $totalRevenue = Transaction::where('payment_status', 'Lunas')->sum('total_price');
         $transactionsThisMonth = Transaction::whereMonth('created_at', Carbon::now()->month)->count();
         $newTransactions = Transaction::where('status', 'Baru Masuk')->count();
 
-        // Data untuk tabel
+        // Mengambil transaksi terbaru yang PASTI punya data pelanggan dan layanan
         $recentTransactions = Transaction::with(['customer', 'service'])
+            ->whereHas('customer') // Memastikan pelanggan tidak null
+            ->whereHas('service')  // Memastikan layanan tidak null
             ->latest()
             ->take(5)
             ->get();
-            
+
+        // Mengambil aktivitas terbaru
         $recentActivities = ActivityLog::with('user')
             ->latest()
             ->take(5)
@@ -40,3 +43,4 @@ class DashboardController extends Controller
         ));
     }
 }
+

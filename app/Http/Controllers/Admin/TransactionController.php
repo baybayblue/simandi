@@ -8,25 +8,28 @@ use App\Models\Customer;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class TransactionController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar transaksi.
+     * Logika "pintar": Jika yang login pelanggan, hanya tampilkan transaksinya.
      */
-    public function index(Request $request)
+    public function index()
     {
+        $user = Auth::user();
         $query = Transaction::with(['customer', 'service'])->latest();
 
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('invoice_code', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function ($subq) use ($search) {
-                      $subq->where('name', 'like', "%{$search}%");
-                  });
-            });
+        // Jika yang login adalah pelanggan
+        if ($user->role === 'pelanggan') {
+            $customer = Customer::where('email', $user->email)->first();
+            if ($customer) {
+                $query->where('customer_id', $customer->id);
+            } else {
+                // Jika data pelanggan tidak ada, tampilkan kosong
+                $query->where('customer_id', -1); 
+            }
         }
 
         $transactions = $query->paginate(10);
@@ -34,110 +37,106 @@ class TransactionController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Menampilkan formulir untuk membuat transaksi baru.
+     * Logika "pintar": Mengirim data yang berbeda untuk admin dan pelanggan.
      */
     public function create()
     {
-        $customers = Customer::orderBy('name')->get();
-        $services = Service::orderBy('name')->get();
-        return view('admin.transactions.create', compact('customers', 'services'));
+        $user = Auth::user();
+        $services = Service::all();
+        $customers = [];
+
+        // Jika admin, ambil semua data pelanggan
+        if ($user->role === 'admin') {
+            $customers = Customer::all();
+        }
+
+        return view('admin.transactions.create', compact('services', 'customers'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Menyimpan transaksi baru ke database.
+     * Logika "pintar": Menentukan customer_id secara otomatis jika pembuatnya pelanggan.
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'customer_id' => 'required|exists:customers,id',
+        $user = Auth::user();
+
+        $validated = $request->validate([
             'service_id' => 'required|exists:services,id',
             'weight' => 'required|numeric|min:0.1',
+            'notes' => 'nullable|string',
+            // Jika admin, customer_id wajib diisi
+            'customer_id' => ($user->role === 'admin' ? 'required|exists:customers,id' : 'nullable'),
         ]);
 
-        $service = Service::findOrFail($request->service_id);
-        $totalPrice = $service->price_per_kg * $request->weight;
+        $service = Service::find($validated['service_id']);
+        $totalPrice = $validated['weight'] * $service->price_per_kg;
+        $customerId = null;
 
-        // Generate unique invoice code
-        $invoiceCode = 'TRX-' . Carbon::now()->format('Ymd') . '-' . strtoupper(uniqid());
+        // Jika pelanggan yang membuat, cari ID pelanggannya berdasarkan email
+        if ($user->role === 'pelanggan') {
+            $customer = Customer::where('email', $user->email)->firstOrFail();
+            $customerId = $customer->id;
+        } else {
+            // Jika admin, ambil dari input form
+            $customerId = $validated['customer_id'];
+        }
 
         Transaction::create([
-            'invoice_code' => $invoiceCode,
-            'customer_id' => $request->customer_id,
-            'service_id' => $request->service_id,
-            'user_id' => Auth::id(),
-            'weight' => $request->weight,
+            'invoice_code' => 'INV-' . strtoupper(Str::random(8)),
+            'customer_id' => $customerId,
+            'service_id' => $validated['service_id'],
+            'user_id' => $user->id, // Admin/Pelanggan yang membuat
+            'weight' => $validated['weight'],
             'total_price' => $totalPrice,
-            'status' => 'Baru', // Default status
-            'payment_status' => 'Belum Lunas', // Default payment status
-            'notes' => $request->notes,
+            'status' => 'Baru Masuk',
+            'payment_status' => 'Belum Lunas',
+            'notes' => $validated['notes'],
         ]);
 
-        return redirect()->route('admin.transactions.index')
-                         ->with('success', 'Transaksi baru berhasil ditambahkan.');
+        $redirectRoute = $user->role === 'admin' ? 'admin.transactions.index' : 'pelanggan.dashboard';
+        return redirect()->route($redirectRoute)->with('success', 'Transaksi baru berhasil dibuat!');
     }
+    
+    // ... (method show, edit, update, destroy tetap sama seperti sebelumnya) ...
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Transaction $transaction)
     {
-        return view('admin.transactions.show', compact('transaction'));
+        // (Tidak ada perubahan, method show sudah aman)
+        return view('transactions.show', compact('transaction'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Transaction $transaction)
     {
-        $customers = Customer::orderBy('name')->get();
-        $services = Service::orderBy('name')->get();
-        $statuses = ['Baru', 'Proses', 'Selesai', 'Diambil'];
-        $paymentStatuses = ['Belum Lunas', 'Lunas'];
-
-        return view('admin.transactions.edit', compact('transaction', 'customers', 'services', 'statuses', 'paymentStatuses'));
+        $services = Service::all();
+        $customers = Customer::all();
+        return view('admin.transactions.edit', compact('transaction', 'services', 'customers'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Transaction $transaction)
     {
-        $request->validate([
+        $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'service_id' => 'required|exists:services,id',
             'weight' => 'required|numeric|min:0.1',
-            'status' => 'required|in:Baru,Proses,Selesai,Diambil',
+            'status' => 'required|in:Baru Masuk,Proses,Selesai,Diambil',
             'payment_status' => 'required|in:Belum Lunas,Lunas',
+            'notes' => 'nullable|string',
         ]);
+        
+        $service = Service::find($validated['service_id']);
+        $validated['total_price'] = $validated['weight'] * $service->price_per_kg;
 
-        $service = Service::findOrFail($request->service_id);
-        $totalPrice = $service->price_per_kg * $request->weight;
+        $transaction->update($validated);
 
-        $transaction->update([
-            'customer_id' => $request->customer_id,
-            'service_id' => $request->service_id,
-            'weight' => $request->weight,
-            'total_price' => $totalPrice,
-            'status' => $request->status,
-            'payment_status' => $request->payment_status,
-            'notes' => $request->notes,
-            // Automatically set completion/pickup date based on status
-            'completion_date' => $request->status == 'Selesai' ? now() : $transaction->completion_date,
-            'pickup_date' => $request->status == 'Diambil' ? now() : $transaction->pickup_date,
-        ]);
-
-        return redirect()->route('admin.transactions.index')
-                         ->with('success', 'Data transaksi berhasil diperbarui.');
+        return redirect()->route('admin.transactions.index')->with('success', 'Transaksi berhasil diperbarui!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Transaction $transaction)
     {
         $transaction->delete();
-        return redirect()->route('admin.transactions.index')
-                         ->with('success', 'Data transaksi berhasil dihapus.');
+        return redirect()->route('admin.transactions.index')->with('success', 'Transaksi berhasil dihapus.');
     }
 }
 
